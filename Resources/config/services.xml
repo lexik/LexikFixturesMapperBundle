@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="lexik_fixtures_mapper.loader.base"
+                 class="%lexik_fixtures_mapper.loader.base.class%">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument>%lexik_fixtures_mapper.adapters%</argument>
+            <argument type="service" id="validator" />
+        </service>
+
+        <service id="lexik_fixtures_mapper.loader.csv"
+                 class="%lexik_fixtures_mapper.loader.csv.class%"
+                 parent="lexik_fixtures_mapper.loader.base">
+        </service>
+
+        <service id="lexik_fixtures_mapper.loader.yaml"
+                 class="%lexik_fixtures_mapper.loader.yaml.class%"
+                 parent="lexik_fixtures_mapper.loader.base">
+        </service>
+    </services>
+</container>
