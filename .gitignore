@@ -4,3 +4,4 @@ Tests/temp/*
 .project
 .buildpath
 .settings
+vendor
