@@ -6,7 +6,7 @@ Update your `deps` and `deps.lock` files:
     // deps
     ...
     [LexikFixturesMapperBundle]
-        git=https://github.com/lexik/FixturesMapperBundle.git
+        git=https://github.com/lexik/LexikFixturesMapperBundle.git
         target=/bundles/Lexik/Bundle/FixturesMapperBundle
 
     // deps.lock
