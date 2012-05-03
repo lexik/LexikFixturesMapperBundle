@@ -18,6 +18,7 @@ LexikFixturesMapperBundle <commit>
 Register the namespaces with the autoloader:
 
 ```php
+<?php
 // app/autoload.php
 $loader->registerNamespaces(array(
     // ...
@@ -29,6 +30,7 @@ $loader->registerNamespaces(array(
 Register the bundle with your kernel:
 
 ```php
+<?php
 // in AppKernel::registerBundles()
 $bundles = array(
     // ...
@@ -61,6 +63,7 @@ Usage
 Example:
 
 ```php
+<?php
 # Acme/DemoBundle/DataFixtures/ORM/LoadData.php
 
 namespace Acme\DemoBundle\DataFixtures\ORM;
