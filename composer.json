@@ -24,7 +24,7 @@
         "doctrine/orm": "*"
     },
     "autoload":     {
-        "psr-0": { "Lexik\\Bundle\\FormFilterBundle": "" }
+        "psr-0": { "Lexik\\Bundle\\FixturesMapperBundle": "" }
     },
     "target-dir": "Lexik/Bundle/FixturesMapperBundle"
 }
