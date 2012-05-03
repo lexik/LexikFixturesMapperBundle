@@ -1,0 +1,30 @@
+{
+    "name": "lexik/fixtures-mapper-bundle",
+    "type": "symfony-bundle",
+    "description": "This bundle provide some classes to easily load fixtures from CSV or Yaml files.",
+    "keywords": ["Symfony2", "bundle", "fixtures"],
+    "homepage": "https://github.com/lexik/LexikFixturesMapperBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jeremy Barthe",
+            "email": "j.barthe@lexik.fr"
+        },
+        {
+            "name": "Dev Lexik",
+            "email": "dev@lexik.fr"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "symfony/framework-bundle": "2.0.*"
+    },
+    "suggest": {
+        "doctrine/data-fixtures": "*",
+        "doctrine/orm": "*"
+    },
+    "autoload":     {
+        "psr-0": { "Lexik\\Bundle\\FormFilterBundle": "" }
+    },
+    "target-dir": "Lexik/Bundle/FixturesMapperBundle"
+}
