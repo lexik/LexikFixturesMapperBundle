@@ -25,6 +25,12 @@ class Mapper
     const CONTINUE_ON_VALIDATOR_VIOLATIONS  = 2;
 
     /**
+     * Available callbacks.
+     */
+    const CALLBACK_PRE_PERSIST  = 'prePersist';
+    const CALLBACK_POST_PERSIST = 'postPersist';
+
+    /**
      * @var array
      */
     private $values;
@@ -55,6 +61,11 @@ class Mapper
     private $validationGroups;
 
     /**
+     * @var array
+     */
+    private $callbacks;
+
+    /**
      * Constructor.
      *
      * @param array                         $values
@@ -66,6 +77,7 @@ class Mapper
         $this->values        = $values;
         $this->entityManager = $entityManager;
         $this->validator     = $validator;
+        $this->callbacks     = array();
     }
 
     /**
@@ -122,13 +134,25 @@ class Mapper
     }
 
     /**
+     * Set a callback.
+     *
+     * @param string $name
+     * @param mixed $callback
+     */
+    public function setCallback($name, $callback)
+    {
+        $this->callbacks[$name] = $callback;
+
+        return $this;
+    }
+
+    /**
      * Map values to entities and persist them.
      *
      * @param integer         $validatorStrategy
      * @param integer|boolean $batchSize
-     * @param \Closure        $callback
      */
-    public function persist($validatorStrategy = self::EXCEPTION_ON_VALIDATOR_VIOLATIONS, $batchSize = false, \Closure $callback = null)
+    public function persist($validatorStrategy = self::EXCEPTION_ON_VALIDATOR_VIOLATIONS, $batchSize = false)
     {
         if (null === $this->entityName) {
             throw new \InvalidArgumentException('You must provide an entity name');
@@ -168,12 +192,13 @@ class Mapper
             }
 
             // customize object before persist
-            if ($callback instanceof \Closure) {
-                $callback($data, $object);
-            }
+            $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
 
             // persist object
             $this->entityManager->persist($object);
+
+            // customize object after persist
+            $this->executeCallback(self::CALLBACK_POST_PERSIST, $data, $object);
 
             // batch processing
             if (false !== $batchSize && $row % $batchSize == 0) {
@@ -186,6 +211,27 @@ class Mapper
 
         $this->entityManager->flush();
         $this->entityManager->clear(); // Detaches all objects from Doctrine!
+    }
+
+    /**
+     * Execute a callback.
+     *
+     * @param string $callbackName
+     * @param mixed $data
+     * @param Object $object
+     * @throws \RuntimeException
+     */
+    protected function executeCallback($callbackName, $data, $object)
+    {
+        if (isset($this->callbacks[$callbackName])) {
+            $callback = $this->callbacks[$callbackName];
+
+            if ($callback instanceof \Closure) {
+                $callback($data, $object);
+            } else {
+                call_user_func($callback, $data, $object);
+            }
+        }
     }
 
     /**
