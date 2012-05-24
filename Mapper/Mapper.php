@@ -17,12 +17,17 @@ class Mapper
     /**
      * Throw an exception on violations detection.
      */
-    const EXCEPTION_ON_VALIDATOR_VIOLATIONS = 1;
+    const VALIDATOR_EXCEPTION_ON_VIOLATIONS = 1;
 
     /**
      * Ignore object and continue the loop on violations detection.
      */
-    const CONTINUE_ON_VALIDATOR_VIOLATIONS  = 2;
+    const VALIDATOR_CONTINUE_ON_VIOLATIONS  = 2;
+
+    /**
+     * Bypass the entity validation.
+     */
+    const VALIDATOR_BYPASS = 3;
 
     /**
      * Available callbacks.
@@ -152,7 +157,7 @@ class Mapper
      * @param integer         $validatorStrategy
      * @param integer|boolean $batchSize
      */
-    public function persist($validatorStrategy = self::EXCEPTION_ON_VALIDATOR_VIOLATIONS, $batchSize = false)
+    public function persist($validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS, $batchSize = false)
     {
         if (null === $this->entityName) {
             throw new \InvalidArgumentException('You must provide an entity name');
@@ -181,13 +186,16 @@ class Mapper
             }
 
             // validate object
-            $violations = $this->validator->validate($object, $this->validationGroups);
-            if (count($violations) > 0) {
-                if (self::EXCEPTION_ON_VALIDATOR_VIOLATIONS === $validatorStrategy) {
-                    throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
-                } else {
-                    unset($object);
-                    continue;
+            if ($validatorStrategy != self::VALIDATOR_BYPASS) {
+                $violations = $this->validator->validate($object, $this->validationGroups);
+
+                if (count($violations) > 0) {
+                    if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $validatorStrategy) {
+                        throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
+                    } else {
+                        unset($object);
+                        continue;
+                    }
                 }
             }
 
