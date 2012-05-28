@@ -10,21 +10,6 @@ namespace Lexik\Bundle\FixturesMapperBundle\Mapper;
 interface MapperInterface
 {
     /**
-     * Throw an exception on violations detection.
-     */
-    const VALIDATOR_EXCEPTION_ON_VIOLATIONS = 1;
-
-    /**
-     * Ignore object and continue the loop on violations detection.
-     */
-    const VALIDATOR_CONTINUE_ON_VIOLATIONS = 2;
-
-    /**
-     * Bypass the entity validation.
-     */
-    const VALIDATOR_BYPASS = 3;
-
-    /**
      * Set entity name.
      *
      * @param string $entityName
@@ -43,6 +28,15 @@ interface MapperInterface
     public function setValidationGroups(array $validationGroups);
 
     /**
+     * Set validation strategy.
+     *
+     * @param integer $validatorStrategy
+     *
+     * @return Mapper
+     */
+    public function setValidatorStrategy($validatorStrategy);
+
+    /**
      * Map a column with a property name or a closure.
      *
      * @param string          $index
@@ -55,8 +49,7 @@ interface MapperInterface
     /**
      * Map values to entities and persist them.
      *
-     * @param integer         $validatorStrategy
      * @param integer|boolean $batchSize
      */
-    public function persist($validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS, $batchSize = false);
+    public function persist($batchSize = false);
 }

@@ -16,6 +16,21 @@ use Symfony\Component\DependencyInjection\Container;
 class Mapper implements MapperInterface
 {
     /**
+     * Throw an exception on violations detection.
+     */
+    const VALIDATOR_EXCEPTION_ON_VIOLATIONS = 1;
+
+    /**
+     * Ignore object and continue the loop on violations detection.
+     */
+    const VALIDATOR_CONTINUE_ON_VIOLATIONS = 2;
+
+    /**
+     * Bypass the entity validation.
+     */
+    const VALIDATOR_BYPASS = 3;
+
+    /**
      * Available callbacks.
      */
     const CALLBACK_ON_EXCEPTION  = 'onException';
@@ -53,6 +68,11 @@ class Mapper implements MapperInterface
     private $validationGroups;
 
     /**
+     * @var string
+     */
+    private $validatorStrategy;
+
+    /**
      * @var array
      */
     private $callbacks;
@@ -66,10 +86,11 @@ class Mapper implements MapperInterface
      */
     public function __construct(array $values, EntityManagerAdapterInterface $entityManager, Validator $validator)
     {
-        $this->values        = $values;
-        $this->entityManager = $entityManager;
-        $this->validator     = $validator;
-        $this->callbacks     = array();
+        $this->values            = $values;
+        $this->entityManager     = $entityManager;
+        $this->validator         = $validator;
+        $this->callbacks         = array();
+        $this->validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS;
     }
 
     /**
@@ -105,6 +126,16 @@ class Mapper implements MapperInterface
     /**
      * {@inheritdoc}
      */
+    public function setValidatorStrategy($validatorStrategy)
+    {
+        $this->validatorStrategy = $validatorStrategy;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function mapColumn($index, $value = null)
     {
         $this->mapColumns[$index] = (null !== $value) ? $value : $index;
@@ -128,7 +159,7 @@ class Mapper implements MapperInterface
     /**
      * {@inheritdoc}
      */
-    public function persist($validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS, $batchSize = false)
+    public function persist($batchSize = false)
     {
         if (null === $this->entityName) {
             throw new \InvalidArgumentException('You must provide an entity name');
@@ -143,7 +174,7 @@ class Mapper implements MapperInterface
             $row++;
 
             try {
-                $object = $this->doPersist($data, $validatorStrategy);
+                $object = $this->doPersist($data);
             } catch (InvalidMethodException $e) {
                 throw $e;
             } catch (\Exception $e) {
@@ -165,7 +196,7 @@ class Mapper implements MapperInterface
         $this->entityManager->clear(); // Detaches all objects from Doctrine!
     }
 
-    protected function doPersist($data, $validatorStrategy)
+    protected function doPersist($data)
     {
         $object = new $this->entityName;
 
@@ -182,13 +213,13 @@ class Mapper implements MapperInterface
         }
 
         // validate object
-        if ($validatorStrategy != self::VALIDATOR_BYPASS) {
+        if ($this->validatorStrategy !== self::VALIDATOR_BYPASS) {
             $violations = $this->validator->validate($object, $this->validationGroups);
 
             if (count($violations) > 0) {
                 $this->executeCallback(self::CALLBACK_ON_VIOLATIONS, $data, $object, $violations);
 
-                if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $validatorStrategy) {
+                if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $this->validatorStrategy) {
                     throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
                 } else {
                     unset($object);
