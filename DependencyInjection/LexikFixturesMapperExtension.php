@@ -27,6 +27,7 @@ class LexikFixturesMapperExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
+        $container->setParameter('lexik_fixtures_mapper.mapper.base.class', $config['mapper']['base_class']);
         $container->setParameter('lexik_fixtures_mapper.loader.base.class', $config['loader']['base_class']);
         $container->setParameter('lexik_fixtures_mapper.loader.csv.class', $config['loader']['csv_class']);
         $container->setParameter('lexik_fixtures_mapper.loader.yaml.class', $config['loader']['yaml_class']);

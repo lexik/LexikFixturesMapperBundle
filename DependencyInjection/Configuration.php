@@ -33,6 +33,16 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
 
+                ->arrayNode('mapper')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('base_class')
+                            ->cannotBeEmpty()
+                            ->defaultValue('Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper')
+                         ->end()
+                    ->end()
+                ->end()
+
                 ->arrayNode('loader')
                     ->addDefaultsIfNotSet()
                     ->children()

@@ -24,7 +24,7 @@ class CsvLoaderTest extends TestCase
         );
 
         $validator = ValidatorFactory::buildDefault()->getValidator();
-        $this->csvLoader = new CsvLoader($this->getMockSqliteEntityManager(), $adapters, $validator);
+        $this->csvLoader = new CsvLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
     }
 
     /**

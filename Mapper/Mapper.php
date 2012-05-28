@@ -12,28 +12,14 @@ use Symfony\Component\DependencyInjection\Container;
  *
  * @author Jeremy Barthe <j.barthe@lexik.fr>
  */
-class Mapper
+class Mapper implements MapperInterface
 {
-    /**
-     * Throw an exception on violations detection.
-     */
-    const VALIDATOR_EXCEPTION_ON_VIOLATIONS = 1;
-
-    /**
-     * Ignore object and continue the loop on violations detection.
-     */
-    const VALIDATOR_CONTINUE_ON_VIOLATIONS  = 2;
-
-    /**
-     * Bypass the entity validation.
-     */
-    const VALIDATOR_BYPASS = 3;
-
     /**
      * Available callbacks.
      */
-    const CALLBACK_PRE_PERSIST  = 'prePersist';
-    const CALLBACK_POST_PERSIST = 'postPersist';
+    const CALLBACK_ON_VIOLATIONS = 'onViolations';
+    const CALLBACK_PRE_PERSIST   = 'prePersist';
+    const CALLBACK_POST_PERSIST  = 'postPersist';
 
     /**
      * @var array
@@ -96,11 +82,7 @@ class Mapper
     }
 
     /**
-     * Set entity name.
-     *
-     * @param string $entityName
-     *
-     * @return Mapper
+     * {@inheritdoc}
      */
     public function setEntityName($entityName)
     {
@@ -110,11 +92,7 @@ class Mapper
     }
 
     /**
-     * Set validation groups.
-     *
-     * @param array $validationGroups
-     *
-     * @return Mapper
+     * {@inheritdoc}
      */
     public function setValidationGroups(array $validationGroups)
     {
@@ -124,12 +102,7 @@ class Mapper
     }
 
     /**
-     * Map a column with a property name or a closure.
-     *
-     * @param string          $index
-     * @param string|\Closure $value
-     *
-     * @return Mapper
+     * {@inheritdoc}
      */
     public function mapColumn($index, $value = null)
     {
@@ -152,10 +125,7 @@ class Mapper
     }
 
     /**
-     * Map values to entities and persist them.
-     *
-     * @param integer         $validatorStrategy
-     * @param integer|boolean $batchSize
+     * {@inheritdoc}
      */
     public function persist($validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS, $batchSize = false)
     {
@@ -190,6 +160,8 @@ class Mapper
                 $violations = $this->validator->validate($object, $this->validationGroups);
 
                 if (count($violations) > 0) {
+                    $this->executeCallback(self::CALLBACK_ON_VIOLATIONS, $data, $object, $violations);
+
                     if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $validatorStrategy) {
                         throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
                     } else {
@@ -222,23 +194,17 @@ class Mapper
     }
 
     /**
-     * Execute a callback.
-     *
-     * @param string $callbackName
-     * @param mixed $data
-     * @param Object $object
-     * @throws \RuntimeException
+     * Execute a callback with given arguments.
      */
-    protected function executeCallback($callbackName, $data, $object)
+    protected function executeCallback()
     {
+        $arguments = func_get_args();
+        $callbackName = $arguments[0];
+
         if (isset($this->callbacks[$callbackName])) {
             $callback = $this->callbacks[$callbackName];
-
-            if ($callback instanceof \Closure) {
-                $callback($data, $object);
-            } else {
-                call_user_func($callback, $data, $object);
-            }
+            array_shift($arguments); // shift callback name
+            call_user_func_array($callback, $arguments);
         }
     }
 

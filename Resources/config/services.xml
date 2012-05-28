@@ -10,6 +10,7 @@
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument>%lexik_fixtures_mapper.adapters%</argument>
             <argument type="service" id="validator" />
+            <argument>%lexik_fixtures_mapper.mapper.base.class%</argument>
         </service>
 
         <service id="lexik_fixtures_mapper.loader.csv"

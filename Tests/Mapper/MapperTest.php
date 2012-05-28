@@ -29,8 +29,8 @@ class MapperTest extends TestCase
 
         $this->validator  = ValidatorFactory::buildDefault()->getValidator();
 
-        $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator);
-        $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator);
+        $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
+        $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
 
         $this->articleMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/article.yml');
         $this->commentMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/comment.yml');

@@ -5,8 +5,6 @@ namespace Lexik\Bundle\FixturesMapperBundle\Loader;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Validator\Validator;
 
-use Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper;
-
 /**
  * Base loader class for fixtures.
  *
@@ -30,15 +28,21 @@ abstract class AbstractLoader
     private $validator;
 
     /**
+     * @var string
+     */
+    private $mapperClass;
+
+    /**
      * Constructor.
      *
      * @param EntityManager $entityManager
      * @param Validator     $validator
      */
-    public function __construct($entityManager, array $adapters, Validator $validator)
+    public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass)
     {
-        $this->adapters  = $adapters;
-        $this->validator = $validator;
+        $this->adapters    = $adapters;
+        $this->validator   = $validator;
+        $this->mapperClass = $mapperClass;
 
         $this->initializeAdapter($entityManager);
     }
@@ -92,6 +96,7 @@ abstract class AbstractLoader
     {
         $values = $this->loadData($path, $options);
 
-        return new Mapper($values, $this->emAdapter, $this->validator);
+        $class = $this->mapperClass;
+        return new $class($values, $this->emAdapter, $this->validator);
     }
 }
