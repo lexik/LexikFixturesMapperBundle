@@ -3,6 +3,7 @@
 namespace Lexik\Bundle\FixturesMapperBundle\Mapper;
 
 use Lexik\Bundle\FixturesMapperBundle\Adapter\EntityManagerAdapterInterface;
+use Lexik\Bundle\FixturesMapperBundle\Exception\InvalidMethodException;
 
 use Symfony\Component\Validator\Validator;
 use Symfony\Component\DependencyInjection\Container;
@@ -17,10 +18,9 @@ class Mapper implements MapperInterface
     /**
      * Available callbacks.
      */
-    const CALLBACK_ON_MAP_COLUMNS_EXCEPTION = 'onMapColumnsException';
-    const CALLBACK_ON_VIOLATIONS            = 'onViolations';
-    const CALLBACK_PRE_PERSIST              = 'prePersist';
-    const CALLBACK_ON_PERSIST_EXCEPTION     = 'onPersistException';
+    const CALLBACK_ON_EXCEPTION  = 'onException';
+    const CALLBACK_ON_VIOLATIONS = 'onViolations';
+    const CALLBACK_PRE_PERSIST   = 'prePersist';
 
     /**
      * @var array
@@ -142,50 +142,14 @@ class Mapper implements MapperInterface
         foreach ($this->values as $reference => $data) {
             $row++;
 
-            $object = new $this->entityName;
-
-            // map columns
             try {
-                foreach ($this->mapColumns as $index => $value) {
-                    if (isset($data[$index])) {
-                        if ($value instanceof \Closure) {
-                            $value($data[$index], $object, $data);
-                        } else {
-                            $setter = $this->getPropertySetter($value, $object);
-                            $object->$setter($data[$index]);
-                        }
-                    }
-                }
+                $object = $this->doPersist($data, $validatorStrategy);
+            } catch (InvalidMethodException $e) {
+                throw $e;
             } catch (\Exception $e) {
                 // callback on exception thrown
-                $this->executeCallback(self::CALLBACK_ON_MAP_COLUMNS_EXCEPTION, $data, $object, $e);
-            }
-
-            // validate object
-            if ($validatorStrategy != self::VALIDATOR_BYPASS) {
-                $violations = $this->validator->validate($object, $this->validationGroups);
-
-                if (count($violations) > 0) {
-                    $this->executeCallback(self::CALLBACK_ON_VIOLATIONS, $data, $object, $violations);
-
-                    if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $validatorStrategy) {
-                        throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
-                    } else {
-                        unset($object);
-                        continue;
-                    }
-                }
-            }
-
-            // customize object before persist
-            $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
-
-            try {
-                // persist object
-                $this->entityManager->persist($object);
-            } catch (\Exception $e) {
-                // callback on exception thrown
-                $this->executeCallback(self::CALLBACK_ON_PERSIST_EXCEPTION, $data, $object, $e);
+                $this->executeCallback(self::CALLBACK_ON_EXCEPTION, $this->entityName, $data, $e);
+                continue;
             }
 
             // batch processing
@@ -199,6 +163,47 @@ class Mapper implements MapperInterface
 
         $this->entityManager->flush();
         $this->entityManager->clear(); // Detaches all objects from Doctrine!
+    }
+
+    protected function doPersist($data, $validatorStrategy)
+    {
+        $object = new $this->entityName;
+
+        // map columns
+        foreach ($this->mapColumns as $index => $value) {
+            if (isset($data[$index])) {
+                if ($value instanceof \Closure) {
+                    $value($data[$index], $object, $data);
+                } else {
+                    $setter = $this->getPropertySetter($value, $object);
+                    $object->$setter($data[$index]);
+                }
+            }
+        }
+
+        // validate object
+        if ($validatorStrategy != self::VALIDATOR_BYPASS) {
+            $violations = $this->validator->validate($object, $this->validationGroups);
+
+            if (count($violations) > 0) {
+                $this->executeCallback(self::CALLBACK_ON_VIOLATIONS, $data, $object, $violations);
+
+                if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $validatorStrategy) {
+                    throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
+                } else {
+                    unset($object);
+                    continue;
+                }
+            }
+        }
+
+        // customize object before persist
+        $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
+
+        // persist object
+        $this->entityManager->persist($object);
+
+        return $object;
     }
 
     /**
@@ -222,7 +227,7 @@ class Mapper implements MapperInterface
      * @param string $name
      * @param object $object
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidMethodException
      *
      * @return string
      */
@@ -230,7 +235,7 @@ class Mapper implements MapperInterface
     {
         $setter = sprintf('set%s', Container::camelize($property));
         if ( ! method_exists($object, $setter)) {
-            throw new \InvalidArgumentException(sprintf('The method "%s" does not exists', $setter));
+            throw new InvalidMethodException(sprintf('The method "%s" does not exists', $setter));
         }
 
         return $setter;

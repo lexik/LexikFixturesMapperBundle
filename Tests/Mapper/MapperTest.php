@@ -89,7 +89,7 @@ class MapperTest extends TestCase
     }
 
     /**
-     * @expectedException        InvalidArgumentException
+     * @expectedException        Lexik\Bundle\FixturesMapperBundle\Exception\InvalidMethodException
      * @expectedExceptionMessage The method "setTest" does not exists
      */
     public function testFromYamlInvalidSetter()
