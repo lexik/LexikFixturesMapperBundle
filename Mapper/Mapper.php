@@ -17,9 +17,10 @@ class Mapper implements MapperInterface
     /**
      * Available callbacks.
      */
-    const CALLBACK_ON_VIOLATIONS = 'onViolations';
-    const CALLBACK_PRE_PERSIST   = 'prePersist';
-    const CALLBACK_POST_PERSIST  = 'postPersist';
+    const CALLBACK_ON_MAP_COLUMNS_EXCEPTION = 'onMapColumnsException';
+    const CALLBACK_ON_VIOLATIONS            = 'onViolations';
+    const CALLBACK_PRE_PERSIST              = 'prePersist';
+    const CALLBACK_ON_PERSIST_EXCEPTION     = 'onPersistException';
 
     /**
      * @var array
@@ -144,15 +145,20 @@ class Mapper implements MapperInterface
             $object = new $this->entityName;
 
             // map columns
-            foreach ($this->mapColumns as $index => $value) {
-                if (isset($data[$index])) {
-                    if ($value instanceof \Closure) {
-                        $value($data[$index], $object, $data);
-                    } else {
-                        $setter = $this->getPropertySetter($value, $object);
-                        $object->$setter($data[$index]);
+            try {
+                foreach ($this->mapColumns as $index => $value) {
+                    if (isset($data[$index])) {
+                        if ($value instanceof \Closure) {
+                            $value($data[$index], $object, $data);
+                        } else {
+                            $setter = $this->getPropertySetter($value, $object);
+                            $object->$setter($data[$index]);
+                        }
                     }
                 }
+            } catch (\Exception $e) {
+                // callback on exception thrown
+                $this->executeCallback(self::CALLBACK_ON_MAP_COLUMNS_EXCEPTION, $data, $object, $e);
             }
 
             // validate object
@@ -174,11 +180,13 @@ class Mapper implements MapperInterface
             // customize object before persist
             $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
 
-            // persist object
-            $this->entityManager->persist($object);
-
-            // customize object after persist
-            $this->executeCallback(self::CALLBACK_POST_PERSIST, $data, $object);
+            try {
+                // persist object
+                $this->entityManager->persist($object);
+            } catch (\Exception $e) {
+                // callback on exception thrown
+                $this->executeCallback(self::CALLBACK_ON_PERSIST_EXCEPTION, $data, $object, $e);
+            }
 
             // batch processing
             if (false !== $batchSize && $row % $batchSize == 0) {
