@@ -24,9 +24,10 @@ interface EntityManagerAdapterInterface
     public function remove($object);
 
     /**
-     * Merge an entity with existings data.
+     * Merge an entity with existings data and returns the merged object
      *
      * @param Object $object
+     * @return Object
      */
     public function merge($object);
 
@@ -53,4 +54,22 @@ interface EntityManagerAdapterInterface
      * Clear all mapped entity.
      */
     public function clear();
+
+    /**
+     * Return true is the property is a single column association
+     *
+     * @param string $className
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isSingleAssociation($className, $fieldName);
+
+    /**
+     * Return true is the property is acollection association
+     *
+     * @param string $className
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isCollectionAssociation($className, $fieldName);
 }

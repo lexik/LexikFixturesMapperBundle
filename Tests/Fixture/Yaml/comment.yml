@@ -1,12 +1,12 @@
 -
-    article: article_1
-    message: First comment
+    reference: com_1
+    message:   First comment
 -
-    article: article_1
-    message: Second comment
+    reference: com_2
+    message:   Second comment
 -
-    article: article_2
-    message: First comment
+    reference: com_3
+    message:   Thrid comment
 -
-    article: article_2
-    message: Second comment
+    reference: com_4
+    message:   Fourth comment

@@ -2,6 +2,8 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Mapper;
 
+use Doctrine\Common\DataFixtures\AbstractFixture;
+
 use Lexik\Bundle\FixturesMapperBundle\Adapter\EntityManagerAdapterInterface;
 use Lexik\Bundle\FixturesMapperBundle\Exception\InvalidMethodException;
 
@@ -78,6 +80,11 @@ class Mapper implements MapperInterface
     private $callbacks;
 
     /**
+     * @var Doctrine\Common\DataFixtures\AbstractFixture
+     */
+    private $fixtures;
+
+    /**
      * Constructor.
      *
      * @param array                         $values
@@ -109,6 +116,18 @@ class Mapper implements MapperInterface
     public function setEntityName($entityName)
     {
         $this->entityName = $entityName;
+
+        return $this;
+    }
+
+    /**
+     * Set the reference repository.
+     *
+     * @param ReferenceRepository $repository
+     */
+    public function setLoadData(AbstractFixture $fixtures)
+    {
+        $this->fixtures = $fixtures;
 
         return $this;
     }
@@ -177,11 +196,11 @@ class Mapper implements MapperInterface
                 $object = $this->doPersist($data);
             } catch (InvalidMethodException $e) {
                 throw $e;
-            } catch (\Exception $e) {
+            }/* catch (\Exception $e) {
                 // callback on exception thrown
                 $this->executeCallback(self::CALLBACK_ON_EXCEPTION, $this->entityName, $data, $e);
                 continue;
-            }
+            }*/
 
             // batch processing
             if (false !== $batchSize && $row % $batchSize == 0) {
@@ -196,6 +215,12 @@ class Mapper implements MapperInterface
         $this->entityManager->clear(); // Detaches all objects from Doctrine!
     }
 
+    /**
+     * Persist one object.
+     *
+     * @param array $data
+     * @throws \DomainException
+     */
     protected function doPersist($data)
     {
         $object = new $this->entityName;
@@ -205,9 +230,10 @@ class Mapper implements MapperInterface
             if (isset($data[$index])) {
                 if ($value instanceof \Closure) {
                     $value($data[$index], $object, $data);
+                } else if (is_callable($value)) {
+                    call_user_func($value, $data[$index], $object, $data);
                 } else {
-                    $setter = $this->getPropertySetter($value, $object);
-                    $object->$setter($data[$index]);
+                    $this->setPropertyValue($object, $value, $data[$index]);
                 }
             }
         }
@@ -253,22 +279,52 @@ class Mapper implements MapperInterface
     }
 
     /**
-     * Get setter name of a given property.
+     * Set the value for the given property.
+     *
+     * @param object $object
+     * @param string $property
+     * @param mixed $value
+     */
+    protected function setPropertyValue($object, $property, $value)
+    {
+        if ($this->entityManager->isSingleAssociation(get_class($object), $property)) {
+            $relatedObject = $this->entityManager->merge($this->fixtures->getReference($value));
+            $method = $this->getPropertyMethod($property, $object);
+            $object->$method($relatedObject);
+
+        } else if ($this->entityManager->isCollectionAssociation(get_class($object), $property)) {
+            $method = $this->getPropertyMethod($property, $object, false);
+            foreach ($value as $elmt) {
+                $relatedObject = $this->entityManager->merge($this->fixtures->getReference($elmt));
+                $object->$method($relatedObject);
+            }
+
+        } else {
+            $method = $this->getPropertyMethod($property, $object);
+            $object->$method($value);
+        }
+    }
+
+    /**
+     * Get the method name of a given property.
      *
      * @param string $name
      * @param object $object
+     * @param boolean $single
      *
      * @throws InvalidMethodException
      *
      * @return string
      */
-    private function getPropertySetter($property, $object)
+    private function getPropertyMethod($property, $object, $single = true)
     {
-        $setter = sprintf('set%s', Container::camelize($property));
-        if ( ! method_exists($object, $setter)) {
-            throw new InvalidMethodException(sprintf('The method "%s" does not exists', $setter));
+        $methodPattern = $single ? 'set%s' : 'add%s';
+        $method = sprintf($methodPattern, Container::camelize($property));
+
+        if ( ! method_exists($object, $method)) {
+            throw new InvalidMethodException(sprintf('The method "%s" does not exists', $method));
         }
 
-        return $setter;
+        return $method;
     }
 }

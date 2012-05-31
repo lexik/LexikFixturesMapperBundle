@@ -16,6 +16,10 @@ class MapperTest extends TestCase
     protected $csvLoader;
     protected $yamlLoader;
 
+    protected $articleMapper;
+    protected $commentMapper;
+    protected $categoryMapper;
+
     protected function setUp()
     {
         parent::setUp();
@@ -34,6 +38,17 @@ class MapperTest extends TestCase
 
         $this->articleMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/article.yml');
         $this->commentMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/comment.yml');
+        $this->categoryMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/category.yml');
+    }
+
+    protected function createLoadData()
+    {
+        $refRepository = new \Doctrine\Common\DataFixtures\ReferenceRepository($this->em);
+
+        $loadData = new \Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\LoadData();
+        $loadData->setReferenceRepository($refRepository);
+
+        return $loadData;
     }
 
     /**
@@ -73,7 +88,7 @@ class MapperTest extends TestCase
         ;
 
         $articles = $this->em->getRepository('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')->findAll();
-        $this->assertEquals(count($articles), 2);
+        $this->assertEquals(count($articles), 3);
     }
 
     /**
@@ -99,5 +114,131 @@ class MapperTest extends TestCase
             ->mapColumn('title', 'test')
             ->persist()
         ;
+    }
+
+    public function testFromYamlSetCollectionAssociationManyToMany()
+    {
+        $loadData = $this->createLoadData();
+
+        $this->commentMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Comment')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $article) use ($loadData) {
+                $loadData->addReference($ref, $article);
+            })
+            ->mapColumn('message')
+            ->persist()
+        ;
+
+        $this->articleMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $article) use ($loadData) {
+                $loadData->addReference($ref, $article);
+            })
+            ->mapColumn('type')
+            ->mapColumn('title')
+            ->mapColumn('comments')
+            ->persist()
+        ;
+
+        $articles = $this->findAllArticles();
+
+        $this->assertEquals(3, count($articles));
+
+        $this->assertEquals('First article', $articles[0]->getTitle());
+        $this->assertEquals(1, count($articles[0]->getComments()));
+
+        $this->assertEquals('Second article', $articles[1]->getTitle());
+        $this->assertEquals(2, count($articles[1]->getComments()));
+
+        $this->assertEquals('Third article', $articles[2]->getTitle());
+        $this->assertEquals(1, count($articles[2]->getComments()));
+    }
+
+    public function testFromYamlSetCollectionAssociationOneToMany()
+    {
+        $loadData = $this->createLoadData();
+
+        $this->articleMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $article) use ($loadData) {
+                $loadData->addReference($ref, $article);
+            })
+            ->mapColumn('type')
+            ->mapColumn('title')
+            ->persist()
+        ;
+
+        $this->categoryMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Category')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $category) use ($loadData) {
+                $loadData->addReference($ref, $category);
+            })
+            ->mapColumn('label')
+            ->mapColumn('articles')
+            ->persist()
+        ;
+
+        $this->assertArticlesCategory();
+    }
+
+    public function testFromYamlSetSingleAssociation()
+    {
+        $loadData = $this->createLoadData();
+
+        $this->categoryMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Category')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $category) use ($loadData) {
+                $loadData->addReference($ref, $category);
+            })
+            ->mapColumn('label')
+            ->persist()
+        ;
+
+        $this->articleMapper
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')
+            ->setLoadData($loadData)
+            ->mapColumn('reference', function ($ref, $article) use ($loadData) {
+                $loadData->addReference($ref, $article);
+            })
+            ->mapColumn('type')
+            ->mapColumn('title')
+            ->mapColumn('category')
+            ->persist()
+        ;
+
+        $this->assertArticlesCategory();
+    }
+
+    protected function findAllArticles()
+    {
+        return $this->em->getRepository('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')
+            ->createQueryBuilder('a')
+            ->select('a, cat, com')
+            ->leftJoin('a.category', 'cat')
+            ->leftJoin('a.category', 'com')
+            ->orderBy('a.title', 'asc')
+            ->getQuery()
+            ->getResult();
+    }
+
+    protected function assertArticlesCategory()
+    {
+        $articles = $this->findAllArticles();
+
+        $this->assertEquals(3, count($articles));
+
+        $this->assertEquals('First article', $articles[0]->getTitle());
+        $this->assertEquals('rabbids', $articles[0]->getCategory()->getLabel());
+
+        $this->assertEquals('Second article', $articles[1]->getTitle());
+        $this->assertEquals('rainbow', $articles[1]->getCategory()->getLabel());
+
+        $this->assertEquals('Third article', $articles[2]->getTitle());
+        $this->assertEquals('rainbow', $articles[2]->getCategory()->getLabel());
     }
 }

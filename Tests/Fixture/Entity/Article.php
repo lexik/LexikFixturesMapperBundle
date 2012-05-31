@@ -36,6 +36,12 @@ class Article
      */
     private $comments;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Category", inversedBy="articles")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
+     */
+    private $category;
+
     public function __construct()
     {
         $this->comments = new \Doctrine\Common\Collections\ArrayCollection();
@@ -66,7 +72,7 @@ class Article
         return $this->type;
     }
 
-    public function addComment(Comment $comment)
+    public function addComments(Comment $comment)
     {
         $this->comments[] = $comment;
     }
@@ -74,5 +80,15 @@ class Article
     public function getComments()
     {
         return $this->comments;
+    }
+
+    public function setCategory(\Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Category $category)
+    {
+        $this->category = $category;
+    }
+
+    public function getCategory()
+    {
+        return $this->category;
     }
 }

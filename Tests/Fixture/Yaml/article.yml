@@ -2,7 +2,17 @@
     reference: article_1
     type:      test
     title:     First article
+    category:  cat_1
+    comments:  [ com_1 ]
 -
     reference: article_2
     type:      test
     title:     Second article
+    category:  cat_2
+    comments:  [ com_2, com_3 ]
+-
+    reference: article_3
+    type:      test
+    title:     Third article
+    category:  cat_2
+    comments:  [ com_4 ]

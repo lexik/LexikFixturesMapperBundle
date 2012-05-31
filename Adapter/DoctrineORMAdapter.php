@@ -47,7 +47,7 @@ class DoctrineORMAdapter implements EntityManagerAdapterInterface
      */
     public function merge($object)
     {
-        $this->em->merge($object);
+        return $this->em->merge($object);
     }
 
     /**
@@ -80,5 +80,25 @@ class DoctrineORMAdapter implements EntityManagerAdapterInterface
     public function clear()
     {
         $this->em->clear();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isSingleAssociation($className, $fieldName)
+    {
+        $metaData = $this->em->getClassMetadata($className);
+
+        return $metaData->isAssociationWithSingleJoinColumn($fieldName);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCollectionAssociation($className, $fieldName)
+    {
+        $metaData = $this->em->getClassMetadata($className);
+
+        return $metaData->isCollectionValuedAssociation($fieldName);
     }
 }

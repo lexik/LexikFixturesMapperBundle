@@ -44,10 +44,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($this->em);
         $schemaTool->dropSchema(array());
-        $schemaTool->createSchema(array(
-            $this->em->getClassMetadata('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article'),
-            $this->em->getClassMetadata('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Comment'),
-        ));
+        $schemaTool->createSchema($this->em->getMetadataFactory()->getAllMetadata());
     }
 
     /**
@@ -83,7 +80,10 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         $reader = new AnnotationReader();
         $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-        $mappingDriver = new AnnotationDriverORM($reader);
+        $mappingDriver = new AnnotationDriverORM($reader, array(
+            __DIR__.'/../vendor/doctrine/lib',
+            __DIR__.'/Fixture/Entity',
+        ));
 
         $config->expects($this->any())
             ->method('getMetadataDriverImpl')

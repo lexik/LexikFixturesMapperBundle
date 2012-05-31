@@ -1,0 +1,8 @@
+-
+    reference: cat_1
+    label:     rabbids
+    articles:   [ article_1 ]
+-
+    reference: cat_2
+    label:     rainbow
+    articles:   [ article_2, article_3 ]
