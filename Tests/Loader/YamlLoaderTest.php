@@ -24,6 +24,7 @@ class YamlLoaderTest extends TestCase
         );
 
         $validator = ValidatorFactory::buildDefault()->getValidator();
+
         $this->yamlLoader = new YamlLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
     }
 
