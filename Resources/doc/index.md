@@ -223,9 +223,8 @@ Example:
 Auto map relation field
 -----------------------
 
-##### This will work only by using YAML file.
-
 To make the bundle automaticaly maps field that are relations you will have to add all entities to the reference repositories.
+If you use csv files and you need to map a field which is a collection, as there is no syntax to define an array as in yaml, you will have to sperate related references by a `|`.
 
 Here we suppose the MyEntity entity is related to one RelatedEntity (so a RelatedEntity can be related to many MyEntity).
 

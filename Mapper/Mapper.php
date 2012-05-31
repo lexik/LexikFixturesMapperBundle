@@ -85,19 +85,25 @@ class Mapper implements MapperInterface
     private $fixtures;
 
     /**
+     * @var string
+     */
+    private $collectionDelimiter;
+
+    /**
      * Constructor.
      *
      * @param array                         $values
      * @param EntityManagerAdapterInterface $entityManager
      * @param Validator                     $validator
      */
-    public function __construct(array $values, EntityManagerAdapterInterface $entityManager, Validator $validator)
+    public function __construct(array $values, EntityManagerAdapterInterface $entityManager, Validator $validator, $collectionDelimiter)
     {
         $this->values            = $values;
         $this->entityManager     = $entityManager;
         $this->validator         = $validator;
         $this->callbacks         = array();
         $this->validatorStrategy = self::VALIDATOR_EXCEPTION_ON_VIOLATIONS;
+        $this->collectionDelimiter = $collectionDelimiter;
     }
 
     /**
@@ -293,6 +299,10 @@ class Mapper implements MapperInterface
             $object->$method($relatedObject);
 
         } else if ($this->entityManager->isCollectionAssociation(get_class($object), $property)) {
+            if (is_string($value)) {
+                $value = explode($this->collectionDelimiter, $value);
+            }
+
             $method = $this->getPropertyMethod($property, $object, false);
             foreach ($value as $elmt) {
                 $relatedObject = $this->entityManager->merge($this->fixtures->getReference($elmt));

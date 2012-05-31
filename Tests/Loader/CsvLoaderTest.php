@@ -24,7 +24,7 @@ class CsvLoaderTest extends TestCase
         );
 
         $validator = ValidatorFactory::buildDefault()->getValidator();
-        $this->csvLoader = new CsvLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
+        $this->csvLoader = new CsvLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
     }
 
     /**
@@ -40,7 +40,7 @@ class CsvLoaderTest extends TestCase
     {
         $articleMapper = $this->csvLoader->load(__DIR__ . '/../Fixture/Csv/article.csv');
         $this->assertTrue($articleMapper instanceof Mapper);
-        $this->assertEquals(count($articleMapper->getValues()), 2);
+        $this->assertEquals(count($articleMapper->getValues()), 3);
 
         $commentMapper = $this->csvLoader->load(__DIR__ . '/../Fixture/Csv/comment.csv');
         $this->assertTrue($commentMapper instanceof Mapper);
@@ -53,10 +53,10 @@ class CsvLoaderTest extends TestCase
             'ignored_lines' => 1,
         ));
         $this->assertTrue($articleMapper instanceof Mapper);
-        $this->assertEquals(count($articleMapper->getValues()), 1);
+        $this->assertEquals(count($articleMapper->getValues()), 2);
 
         $articleMapper = $this->csvLoader->load(__DIR__ . '/../Fixture/Csv/article.csv', array(
-            'ignored_lines' => array(1, 2),
+            'ignored_lines' => array(1, 2, 3),
         ));
         $this->assertTrue($articleMapper instanceof Mapper);
         $this->assertEquals(count($articleMapper->getValues()), 0);

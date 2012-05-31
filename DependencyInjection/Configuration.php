@@ -40,6 +40,11 @@ class Configuration implements ConfigurationInterface
                             ->cannotBeEmpty()
                             ->defaultValue('Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper')
                          ->end()
+
+                        ->scalarNode('collection_delimiter')
+                            ->defaultValue('|')
+                            ->cannotBeEmpty()
+                        ->end()
                     ->end()
                 ->end()
 

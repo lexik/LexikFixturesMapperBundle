@@ -33,8 +33,8 @@ class MapperTest extends TestCase
 
         $this->validator  = ValidatorFactory::buildDefault()->getValidator();
 
-        $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
-        $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper');
+        $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
+        $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
 
         $this->articleMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/article.yml');
         $this->commentMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/comment.yml');
@@ -59,7 +59,7 @@ class MapperTest extends TestCase
     {
         $adapter = new DoctrineORMAdapter($this->em);
 
-        $mapper = new Mapper(array(), $adapter, $this->validator);
+        $mapper = new Mapper(array(), $adapter, $this->validator, '|');
         $mapper->persist();
     }
 
@@ -71,7 +71,7 @@ class MapperTest extends TestCase
     {
         $adapter = new DoctrineORMAdapter($this->em);
 
-        $mapper = new Mapper(array(), $adapter, $this->validator);
+        $mapper = new Mapper(array(), $adapter, $this->validator, '|');
         $mapper
             ->setEntityName('InvalidEntity')
             ->persist()
@@ -179,6 +179,35 @@ class MapperTest extends TestCase
             })
             ->mapColumn('label')
             ->mapColumn('articles')
+            ->persist()
+        ;
+
+        $this->assertArticlesCategory();
+    }
+
+    public function testFromCSVSetCollectionAssociationOneToMany()
+    {
+        $loadData = $this->createLoadData();
+
+        $this->csvLoader->load(__DIR__ . '/../Fixture/Csv/article.csv')
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Article')
+            ->setLoadData($loadData)
+            ->mapColumn(0, function ($ref, $article) use ($loadData) {
+                $loadData->addReference($ref, $article);
+            })
+            ->mapColumn(1, 'type')
+            ->mapColumn(2, 'title')
+            ->persist()
+        ;
+
+        $this->csvLoader->load(__DIR__ . '/../Fixture/Csv/category.csv')
+            ->setEntityName('Lexik\\Bundle\\FixturesMapperBundle\\Tests\\Fixture\\Entity\\Category')
+            ->setLoadData($loadData)
+            ->mapColumn(0, function ($ref, $category) use ($loadData) {
+                $loadData->addReference($ref, $category);
+            })
+            ->mapColumn(1, 'label')
+            ->mapColumn(2, 'articles')
             ->persist()
         ;
 

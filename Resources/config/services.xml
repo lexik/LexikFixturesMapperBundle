@@ -11,6 +11,7 @@
             <argument>%lexik_fixtures_mapper.adapters%</argument>
             <argument type="service" id="validator" />
             <argument>%lexik_fixtures_mapper.mapper.base.class%</argument>
+            <argument>%lexik_fixtures_mapper.mapper.collection_delimiter%</argument>
         </service>
 
         <service id="lexik_fixtures_mapper.loader.csv"

@@ -33,16 +33,22 @@ abstract class AbstractLoader
     private $mapperClass;
 
     /**
+     * @var string
+     */
+    private $mapperCollectionDelimiter;
+
+    /**
      * Constructor.
      *
      * @param EntityManager $entityManager
      * @param Validator     $validator
      */
-    public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass)
+    public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass, $mapperCollectionDelimiter)
     {
         $this->adapters    = $adapters;
         $this->validator   = $validator;
         $this->mapperClass = $mapperClass;
+        $this->mapperCollectionDelimiter = $mapperCollectionDelimiter;
 
         $this->initializeAdapter($entityManager);
     }
@@ -97,6 +103,6 @@ abstract class AbstractLoader
         $values = $this->loadData($path, $options);
 
         $class = $this->mapperClass;
-        return new $class($values, $this->emAdapter, $this->validator);
+        return new $class($values, $this->emAdapter, $this->validator, $this->mapperCollectionDelimiter);
     }
 }
