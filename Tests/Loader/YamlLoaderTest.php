@@ -31,7 +31,7 @@ class YamlLoaderTest extends TestCase
     {
         $articleMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/article.yml');
         $this->assertTrue($articleMapper instanceof Mapper);
-        $this->assertEquals(count($articleMapper->getValues()), 2);
+        $this->assertEquals(count($articleMapper->getValues()), 3);
 
         $commentMapper = $this->yamlLoader->load(__DIR__ . '/../Fixture/Yaml/comment.yml');
         $this->assertTrue($commentMapper instanceof Mapper);
