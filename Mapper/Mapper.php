@@ -236,7 +236,7 @@ class Mapper implements MapperInterface
             if (isset($data[$index])) {
                 if ($value instanceof \Closure) {
                     $value($data[$index], $object, $data);
-                } else if (is_callable($value)) {
+                } else if (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
                     call_user_func($value, $data[$index], $object, $data);
                 } else {
                     $this->setPropertyValue($object, $value, $data[$index]);
