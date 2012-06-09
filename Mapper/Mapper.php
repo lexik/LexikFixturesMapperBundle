@@ -172,7 +172,7 @@ class Mapper implements MapperInterface
      * Set a callback.
      *
      * @param string $name
-     * @param mixed $callback
+     * @param mixed  $callback
      */
     public function setCallback($name, $callback)
     {
@@ -224,7 +224,7 @@ class Mapper implements MapperInterface
     /**
      * Persist one object.
      *
-     * @param array $data
+     * @param  array            $data
      * @throws \DomainException
      */
     protected function doPersist($data)
@@ -236,7 +236,7 @@ class Mapper implements MapperInterface
             if (isset($data[$index])) {
                 if ($value instanceof \Closure) {
                     $value($data[$index], $object, $data);
-                } else if (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
+                } elseif (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
                     call_user_func($value, $data[$index], $object, $data);
                 } else {
                     $this->setPropertyValue($object, $value, $data[$index]);
@@ -289,7 +289,7 @@ class Mapper implements MapperInterface
      *
      * @param object $object
      * @param string $property
-     * @param mixed $value
+     * @param mixed  $value
      */
     protected function setPropertyValue($object, $property, $value)
     {
@@ -298,7 +298,7 @@ class Mapper implements MapperInterface
             $method = $this->getPropertyMethod($property, $object);
             $object->$method($relatedObject);
 
-        } else if ($this->entityManager->isCollectionAssociation(get_class($object), $property)) {
+        } elseif ($this->entityManager->isCollectionAssociation(get_class($object), $property)) {
             if (is_string($value)) {
                 $value = explode($this->collectionDelimiter, $value);
             }
@@ -318,8 +318,8 @@ class Mapper implements MapperInterface
     /**
      * Get the method name of a given property.
      *
-     * @param string $name
-     * @param object $object
+     * @param string  $name
+     * @param object  $object
      * @param boolean $single
      *
      * @throws InvalidMethodException

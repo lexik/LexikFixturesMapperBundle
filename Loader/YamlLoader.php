@@ -19,6 +19,7 @@ class YamlLoader extends AbstractLoader
     protected function loadData($path, array $options = array())
     {
         $yaml = new Parser();
+
         return $yaml->parse(file_get_contents($path));
     }
 }

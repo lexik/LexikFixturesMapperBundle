@@ -2,7 +2,6 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Loader;
 
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Validator\Validator;
 
 /**
@@ -42,12 +41,14 @@ abstract class AbstractLoader
      *
      * @param EntityManager $entityManager
      * @param Validator     $validator
+     * @param string        $mapperClass
+     * @param string        $mapperCollectionDelimiter
      */
     public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass, $mapperCollectionDelimiter)
     {
-        $this->adapters    = $adapters;
-        $this->validator   = $validator;
-        $this->mapperClass = $mapperClass;
+        $this->adapters                  = $adapters;
+        $this->validator                 = $validator;
+        $this->mapperClass               = $mapperClass;
         $this->mapperCollectionDelimiter = $mapperCollectionDelimiter;
 
         $this->initializeAdapter($entityManager);
@@ -57,6 +58,7 @@ abstract class AbstractLoader
      * Initialize the adapter according to the given entity manager.
      *
      * @param Object $entityManager
+     *
      * @throws \Exception
      */
     private function initializeAdapter($entityManager)
@@ -84,7 +86,7 @@ abstract class AbstractLoader
      * Load datas from the given path.
      *
      * @param string $path
-     * @param array $options
+     * @param array  $options
      *
      * @return array
      */
@@ -94,7 +96,7 @@ abstract class AbstractLoader
      * Load datas and create a new data mapper.
      *
      * @param string $path
-     * @param array $options
+     * @param array  $options
      *
      * @return Mapper
      */
@@ -103,6 +105,7 @@ abstract class AbstractLoader
         $values = $this->loadData($path, $options);
 
         $class = $this->mapperClass;
+
         return new $class($values, $this->emAdapter, $this->validator, $this->mapperCollectionDelimiter);
     }
 }

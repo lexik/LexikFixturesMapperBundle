@@ -2,23 +2,14 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Tests;
 
-use Symfony\Bundle\AsseticBundle\DependencyInjection\AsseticExtension;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
-use Symfony\Component\DependencyInjection\Scope;
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver as AnnotationDriverORM;
 use Doctrine\Common\EventManager;
-use Doctrine\MongoDB\Connection;
 
 use Lexik\Bundle\FixturesMapperBundle\DependencyInjection\LexikFixturesMapperExtension;
-use Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Article;
-use Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Comment;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
