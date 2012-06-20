@@ -203,9 +203,13 @@ class Mapper implements MapperInterface
             } catch (InvalidMethodException $e) {
                 throw $e;
             } catch (\Exception $e) {
-                // callback on exception thrown
-                $this->executeCallback(self::CALLBACK_ON_EXCEPTION, $this->entityName, $data, $e);
-                continue;
+                if (self::VALIDATOR_EXCEPTION_ON_VIOLATIONS === $this->validatorStrategy) {
+                    throw $e;
+                } else {
+                    // callback on exception thrown
+                    $this->executeCallback(self::CALLBACK_ON_EXCEPTION, $this->entityName, $data, $e);
+                    continue;
+                }
             }
 
             // batch processing
