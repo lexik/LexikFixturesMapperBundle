@@ -66,7 +66,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
 
                 ->arrayNode('adapter')
-                    ->addDefaultsIfNotSet()
                     ->defaultValue($defaultAdapters)
                     ->useAttributeAsKey('name')
                     ->prototype('array')
