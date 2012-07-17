@@ -52,6 +52,12 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'memory' => true,
         );
 
+        $reader = new AnnotationReader();
+        $mappingDriver = new AnnotationDriverORM($reader, array(
+            __DIR__.'/../vendor/doctrine/lib',
+            __DIR__.'/Fixture/Entity',
+        ));
+
         $config = $this->getMock('Doctrine\ORM\Configuration');
         $config->expects($this->once())
             ->method('getProxyDir')
@@ -69,16 +75,13 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             ->method('getClassMetadataFactoryName')
             ->will($this->returnValue('Doctrine\\ORM\\Mapping\\ClassMetadataFactory'));
 
-        $reader = new AnnotationReader();
-        $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-        $mappingDriver = new AnnotationDriverORM($reader, array(
-            __DIR__.'/../vendor/doctrine/lib',
-            __DIR__.'/Fixture/Entity',
-        ));
-
         $config->expects($this->any())
             ->method('getMetadataDriverImpl')
             ->will($this->returnValue($mappingDriver));
+
+        $config->expects($this->any())
+            ->method('getDefaultRepositoryClassName')
+            ->will($this->returnValue('Doctrine\\ORM\\EntityRepository'));
 
         $evm = $this->getMock('Doctrine\Common\EventManager');
         $em = \Doctrine\ORM\EntityManager::create($conn, $config, $evm);

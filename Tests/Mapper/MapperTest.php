@@ -31,7 +31,7 @@ class MapperTest extends TestCase
             ),
         );
 
-        $this->validator  = ValidatorFactory::buildDefault()->getValidator();
+        $this->validator  = ValidatorFactory::buildDefault(array(), true)->getValidator();
 
         $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
         $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');

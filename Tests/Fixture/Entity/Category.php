@@ -23,7 +23,7 @@ class Category
     private $label;
 
     /**
-     * @ORM\OneToMany(targetEntity="Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Category", mappedBy="category")
+     * @ORM\OneToMany(targetEntity="Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Article", mappedBy="category")
      */
     private $articles;
 
