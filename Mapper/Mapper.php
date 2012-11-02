@@ -343,7 +343,7 @@ class Mapper implements MapperInterface
         }
 
         if ( ! method_exists($object, $method)) {
-            throw new InvalidMethodException(sprintf('The method "%s" does not exists', $method));
+            throw new InvalidMethodException(sprintf('The method "%s" does not exists in class "%s".', $method, get_class($object)));
         }
 
         return $method;
