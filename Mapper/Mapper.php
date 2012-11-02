@@ -240,7 +240,7 @@ class Mapper implements MapperInterface
             if (isset($data[$index])) {
                 if ($value instanceof \Closure) {
                     $value($data[$index], $object, $data);
-                } elseif (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
+                } else if (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
                     call_user_func($value, $data[$index], $object, $data);
                 } else {
                     $this->setPropertyValue($object, $value, $data[$index]);
@@ -298,7 +298,7 @@ class Mapper implements MapperInterface
     protected function setPropertyValue($object, $property, $value)
     {
         if ($this->entityManager->isSingleAssociation(get_class($object), $property)) {
-            $relatedObject = $this->entityManager->merge($this->fixtures->getReference($value));
+            $relatedObject = $this->entityManager->merge($this->fixtures->getReference(trim($value)));
             $method = $this->getPropertyMethod($property, $object);
             $object->$method($relatedObject);
 
@@ -309,7 +309,7 @@ class Mapper implements MapperInterface
 
             $method = $this->getPropertyMethod($property, $object, false);
             foreach ($value as $elmt) {
-                $relatedObject = $this->entityManager->merge($this->fixtures->getReference($elmt));
+                $relatedObject = $this->entityManager->merge($this->fixtures->getReference(trim($elmt)));
                 $object->$method($relatedObject);
             }
 
@@ -332,8 +332,15 @@ class Mapper implements MapperInterface
      */
     private function getPropertyMethod($property, $object, $single = true)
     {
-        $methodPattern = $single ? 'set%s' : 'add%s';
-        $method = sprintf($methodPattern, Container::camelize($property));
+        if ($single) {
+            $method = sprintf('set%s', Container::camelize($property));
+        } else {
+            $method = sprintf('add%s', Container::camelize($property));
+
+            if (substr($method, -1) == "s") {
+                $method = substr($method, 0, -1);
+            }
+        }
 
         if ( ! method_exists($object, $method)) {
             throw new InvalidMethodException(sprintf('The method "%s" does not exists', $method));
