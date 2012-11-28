@@ -199,7 +199,7 @@ class Mapper implements MapperInterface
             $row++;
 
             try {
-                $object = $this->doPersist($data);
+                $this->doPersist($data);
             } catch (InvalidMethodException $e) {
                 throw $e;
             } catch (\Exception $e) {
@@ -217,8 +217,6 @@ class Mapper implements MapperInterface
                 $this->entityManager->flush();
                 $this->entityManager->clear(); // Detaches all objects from Doctrine!
             }
-
-            unset($object);
         }
 
         $this->entityManager->flush();
@@ -259,7 +257,7 @@ class Mapper implements MapperInterface
                     throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
                 } else {
                     unset($object);
-                    continue;
+                    return;
                 }
             }
         }
@@ -269,8 +267,6 @@ class Mapper implements MapperInterface
 
         // persist object
         $this->entityManager->persist($object);
-
-        return $object;
     }
 
     /**
