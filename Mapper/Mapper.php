@@ -169,14 +169,18 @@ class Mapper implements MapperInterface
     }
 
     /**
-     * Set a callback.
+     * Add a callback.
      *
      * @param string $name
      * @param mixed  $callback
      */
-    public function setCallback($name, $callback)
+    public function addCallback($name, $callback)
     {
-        $this->callbacks[$name] = $callback;
+        if (!isset($this->callbacks[$name])) {
+            $this->callbacks[$name] = array();
+        }
+
+        $this->callbacks[$name][] = $callback;
 
         return $this;
     }
@@ -278,9 +282,11 @@ class Mapper implements MapperInterface
         $callbackName = $arguments[0];
 
         if (isset($this->callbacks[$callbackName])) {
-            $callback = $this->callbacks[$callbackName];
             array_shift($arguments); // shift callback name
-            call_user_func_array($callback, $arguments);
+
+            foreach ($this->callbacks[$callbackName] as $callback) {
+                call_user_func_array($callback, $arguments);
+            }
         }
     }
 
