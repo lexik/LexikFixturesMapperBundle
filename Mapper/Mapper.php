@@ -250,6 +250,9 @@ class Mapper implements MapperInterface
             }
         }
 
+        // customize object before persist
+        $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
+
         // validate object
         if ($this->validatorStrategy !== self::VALIDATOR_BYPASS) {
             $violations = $this->validator->validate($object, $this->validationGroups);
@@ -265,9 +268,6 @@ class Mapper implements MapperInterface
                 }
             }
         }
-
-        // customize object before persist
-        $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
 
         // persist object
         $this->entityManager->persist($object);
