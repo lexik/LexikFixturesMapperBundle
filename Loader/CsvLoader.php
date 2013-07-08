@@ -16,13 +16,12 @@ class CsvLoader extends AbstractLoader
      */
     protected function loadData($path, array $options = array())
     {
-        $options = array_merge_recursive($options, $this->getDefaultOptions());
-
+        $options = array_merge($this->getDefaultOptions(), $options);
         $values = array();
 
         if (false !== ($handle = @fopen($path, 'r'))) {
             $row = 0;
-            while (false !== ($data = fgetcsv($handle, 0, ';'))) {
+            while (false !== ($data = fgetcsv($handle, 0, $options['delimiter'], $options['enclosure']))) {
                 $row++;
 
                 // ignored lines
@@ -52,6 +51,8 @@ class CsvLoader extends AbstractLoader
         return array(
             // mixed value: can be an array or integer
             'ignored_lines' => null,
+            'delimiter'     => ';',
+            'enclosure'     => '"',
         );
     }
 }
