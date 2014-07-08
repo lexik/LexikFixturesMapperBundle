@@ -2,6 +2,7 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Tests;
 
+use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
@@ -54,7 +55,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         $reader = new AnnotationReader();
         $mappingDriver = new AnnotationDriverORM($reader, array(
-            __DIR__.'/../vendor/doctrine/lib',
             __DIR__.'/Fixture/Entity',
         ));
 
@@ -82,6 +82,15 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $config->expects($this->any())
             ->method('getDefaultRepositoryClassName')
             ->will($this->returnValue('Doctrine\\ORM\\EntityRepository'));
+
+        $config->expects($this->any())
+            ->method('getQuoteStrategy')
+            ->will($this->returnValue(  new Mapping\DefaultQuoteStrategy()));
+
+
+        $config->expects($this->any())
+            ->method('getRepositoryFactory')
+            ->will($this->returnValue(  new DefaultRepositoryFactory()));
 
         $evm = $this->getMock('Doctrine\Common\EventManager');
         $em = \Doctrine\ORM\EntityManager::create($conn, $config, $evm);

@@ -6,7 +6,7 @@ use Lexik\Bundle\FixturesMapperBundle\Tests\TestCase;
 use Lexik\Bundle\FixturesMapperBundle\Loader\YamlLoader;
 use Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper;
 
-use Symfony\Component\Validator\ValidatorFactory;
+use Symfony\Component\Validator\Validation;
 
 class YamlLoaderTest extends TestCase
 {
@@ -23,7 +23,8 @@ class YamlLoaderTest extends TestCase
             ),
         );
 
-        $validator = ValidatorFactory::buildDefault(array(), true)->getValidator();
+        $validator = Validation::createValidatorBuilder()
+            ->getValidator();
 
         $this->yamlLoader = new YamlLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
     }

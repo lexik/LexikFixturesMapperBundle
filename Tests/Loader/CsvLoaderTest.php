@@ -6,6 +6,7 @@ use Lexik\Bundle\FixturesMapperBundle\Tests\TestCase;
 use Lexik\Bundle\FixturesMapperBundle\Loader\CsvLoader;
 use Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper;
 
+use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\ValidatorFactory;
 
 class CsvLoaderTest extends TestCase
@@ -23,7 +24,8 @@ class CsvLoaderTest extends TestCase
             ),
         );
 
-        $validator = ValidatorFactory::buildDefault(array(), true)->getValidator();
+        $validator = Validation::createValidatorBuilder()
+            ->getValidator();
         $this->csvLoader = new CsvLoader($this->getMockSqliteEntityManager(), $adapters, $validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
     }
 

@@ -8,7 +8,8 @@ use Lexik\Bundle\FixturesMapperBundle\Loader\CsvLoader;
 use Lexik\Bundle\FixturesMapperBundle\Loader\YamlLoader;
 use Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper;
 
-use Symfony\Component\Validator\ValidatorFactory;
+use Symfony\Component\Validator\Validation;
+use Doctrine\DBAL\DBALException;
 
 class MapperTest extends TestCase
 {
@@ -31,7 +32,8 @@ class MapperTest extends TestCase
             ),
         );
 
-        $this->validator  = ValidatorFactory::buildDefault(array(), true)->getValidator();
+        $this->validator = Validation::createValidatorBuilder()
+            ->getValidator();
 
         $this->csvLoader  = new CsvLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
         $this->yamlLoader = new YamlLoader($this->em, $adapters, $this->validator, 'Lexik\Bundle\FixturesMapperBundle\Mapper\Mapper', '|');
@@ -92,7 +94,7 @@ class MapperTest extends TestCase
     }
 
     /**
-     * @expectedException        PDOException
+     * @expectedException        Doctrine\DBAL\DBALException
      * @expectedExceptionMessage Article.title may not be NULL
      */
     public function testFromYamlIncompleteMapping()
