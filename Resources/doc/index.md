@@ -1,30 +1,22 @@
 Installation
 ============
 
-Update your `deps` and `deps.lock` files:
+Add the bundle to your `composer.json` file:
 
-```
-// deps
-...
-[LexikFixturesMapperBundle]
-    git=https://github.com/lexik/LexikFixturesMapperBundle.git
-    target=/bundles/Lexik/Bundle/FixturesMapperBundle
-
-// deps.lock
-...
-LexikFixturesMapperBundle <commit>
+```javascript
+require: {
+    // ...
+    "lexik/fixtures-mapper-bundle": "~1.0" // check packagist.org for more tags
+    // ...
+}
 ```
 
-Register the namespaces with the autoloader:
+Then run a composer update:
 
-```php
-<?php
-// app/autoload.php
-$loader->registerNamespaces(array(
-    // ...
-    'Lexik' => __DIR__.'/../vendor/bundles',
-    // ...
-));
+```shell
+composer.phar update
+# OR
+composer.phar update lexik/fixtures-mapper-bundle # to only update the bundle
 ```
 
 Register the bundle with your kernel:
@@ -212,7 +204,7 @@ Example:
         ->setEntityName('\\Acme\\DemoBundle\\Entity\\MyEntity')
         
         // define a callback on prePersist
-        ->setCallback(\Lexik\Bundle\FixturesMapperBundle\Mapper::CALLBACK_PRE_PERSIST, function ($data, $object) {
+        ->addCallback(\Lexik\Bundle\FixturesMapperBundle\Mapper::CALLBACK_PRE_PERSIST, function ($data, $object) {
             // ... do something on pre persist
         })
         
