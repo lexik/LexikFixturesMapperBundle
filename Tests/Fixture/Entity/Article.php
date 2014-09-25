@@ -72,7 +72,7 @@ class Article
         return $this->type;
     }
 
-    public function addComments(Comment $comment)
+    public function addComment(Comment $comment)
     {
         $this->comments[] = $comment;
     }

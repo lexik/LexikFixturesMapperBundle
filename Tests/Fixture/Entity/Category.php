@@ -47,7 +47,7 @@ class Category
         return $this->label;
     }
 
-    public function addArticles(\Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Article $article)
+    public function addArticle(\Lexik\Bundle\FixturesMapperBundle\Tests\Fixture\Entity\Article $article)
     {
         $article->setCategory($this);
 

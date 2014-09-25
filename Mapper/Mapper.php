@@ -169,14 +169,18 @@ class Mapper implements MapperInterface
     }
 
     /**
-     * Set a callback.
+     * Add a callback.
      *
      * @param string $name
      * @param mixed  $callback
      */
-    public function setCallback($name, $callback)
+    public function addCallback($name, $callback)
     {
-        $this->callbacks[$name] = $callback;
+        if (!isset($this->callbacks[$name])) {
+            $this->callbacks[$name] = array();
+        }
+
+        $this->callbacks[$name][] = $callback;
 
         return $this;
     }
@@ -199,7 +203,7 @@ class Mapper implements MapperInterface
             $row++;
 
             try {
-                $object = $this->doPersist($data);
+                $this->doPersist($data);
             } catch (InvalidMethodException $e) {
                 throw $e;
             } catch (\Exception $e) {
@@ -217,8 +221,6 @@ class Mapper implements MapperInterface
                 $this->entityManager->flush();
                 $this->entityManager->clear(); // Detaches all objects from Doctrine!
             }
-
-            unset($object);
         }
 
         $this->entityManager->flush();
@@ -240,13 +242,16 @@ class Mapper implements MapperInterface
             if (isset($data[$index])) {
                 if ($value instanceof \Closure) {
                     $value($data[$index], $object, $data);
-                } elseif (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
+                } else if (is_array($value) && is_callable($value)) { // array check to prevent functions call whose names would be same as columns (like mail, sort, ...)
                     call_user_func($value, $data[$index], $object, $data);
                 } else {
                     $this->setPropertyValue($object, $value, $data[$index]);
                 }
             }
         }
+
+        // customize object before persist
+        $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
 
         // validate object
         if ($this->validatorStrategy !== self::VALIDATOR_BYPASS) {
@@ -259,18 +264,13 @@ class Mapper implements MapperInterface
                     throw new \DomainException(sprintf('Violations detected: %s', $violations->__toString()));
                 } else {
                     unset($object);
-                    continue;
+                    return;
                 }
             }
         }
 
-        // customize object before persist
-        $this->executeCallback(self::CALLBACK_PRE_PERSIST, $data, $object);
-
         // persist object
         $this->entityManager->persist($object);
-
-        return $object;
     }
 
     /**
@@ -282,9 +282,11 @@ class Mapper implements MapperInterface
         $callbackName = $arguments[0];
 
         if (isset($this->callbacks[$callbackName])) {
-            $callback = $this->callbacks[$callbackName];
             array_shift($arguments); // shift callback name
-            call_user_func_array($callback, $arguments);
+
+            foreach ($this->callbacks[$callbackName] as $callback) {
+                call_user_func_array($callback, $arguments);
+            }
         }
     }
 
@@ -298,7 +300,7 @@ class Mapper implements MapperInterface
     protected function setPropertyValue($object, $property, $value)
     {
         if ($this->entityManager->isSingleAssociation(get_class($object), $property)) {
-            $relatedObject = $this->entityManager->merge($this->fixtures->getReference($value));
+            $relatedObject = $this->entityManager->merge($this->fixtures->getReference(trim($value)));
             $method = $this->getPropertyMethod($property, $object);
             $object->$method($relatedObject);
 
@@ -309,7 +311,7 @@ class Mapper implements MapperInterface
 
             $method = $this->getPropertyMethod($property, $object, false);
             foreach ($value as $elmt) {
-                $relatedObject = $this->entityManager->merge($this->fixtures->getReference($elmt));
+                $relatedObject = $this->entityManager->merge($this->fixtures->getReference(trim($elmt)));
                 $object->$method($relatedObject);
             }
 
@@ -332,11 +334,18 @@ class Mapper implements MapperInterface
      */
     private function getPropertyMethod($property, $object, $single = true)
     {
-        $methodPattern = $single ? 'set%s' : 'add%s';
-        $method = sprintf($methodPattern, Container::camelize($property));
+        if ($single) {
+            $method = sprintf('set%s', Container::camelize($property));
+        } else {
+            $method = sprintf('add%s', Container::camelize($property));
+
+            if (substr($method, -1) == "s") {
+                $method = substr($method, 0, -1);
+            }
+        }
 
         if ( ! method_exists($object, $method)) {
-            throw new InvalidMethodException(sprintf('The method "%s" does not exists', $method));
+            throw new InvalidMethodException(sprintf('The method "%s" does not exists in class "%s".', $method, get_class($object)));
         }
 
         return $method;
