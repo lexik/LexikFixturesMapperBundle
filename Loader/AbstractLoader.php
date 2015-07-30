@@ -2,7 +2,7 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Loader;
 
-use Symfony\Component\Validator\Validator;
+use Symfony\Component\Validator\Validator\RecursiveValidator;
 
 /**
  * Base loader class for fixtures.
@@ -44,7 +44,7 @@ abstract class AbstractLoader
      * @param string        $mapperClass
      * @param string        $mapperCollectionDelimiter
      */
-    public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass, $mapperCollectionDelimiter)
+    public function __construct($entityManager, array $adapters, RecursiveValidator $validator, $mapperClass, $mapperCollectionDelimiter)
     {
         $this->adapters                  = $adapters;
         $this->validator                 = $validator;
