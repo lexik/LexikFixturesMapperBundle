@@ -7,7 +7,7 @@ use Doctrine\Common\DataFixtures\AbstractFixture;
 use Lexik\Bundle\FixturesMapperBundle\Adapter\EntityManagerAdapterInterface;
 use Lexik\Bundle\FixturesMapperBundle\Exception\InvalidMethodException;
 
-use Symfony\Component\Validator\Validator;
+use Symfony\Component\Validator\Validator\RecursiveValidator;
 use Symfony\Component\DependencyInjection\Container;
 
 /**
@@ -96,7 +96,7 @@ class Mapper implements MapperInterface
      * @param EntityManagerAdapterInterface $entityManager
      * @param Validator                     $validator
      */
-    public function __construct(array $values, EntityManagerAdapterInterface $entityManager, Validator $validator, $collectionDelimiter)
+    public function __construct(array $values, EntityManagerAdapterInterface $entityManager, RecursiveValidator $validator, $collectionDelimiter)
     {
         $this->values            = $values;
         $this->entityManager     = $entityManager;
