@@ -2,7 +2,7 @@
 
 namespace Lexik\Bundle\FixturesMapperBundle\Loader;
 
-use Symfony\Component\Validator\Validator;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Base loader class for fixtures.
@@ -40,11 +40,11 @@ abstract class AbstractLoader
      * Constructor.
      *
      * @param EntityManager $entityManager
-     * @param Validator     $validator
+     * @param ValidatorInterface     $validator
      * @param string        $mapperClass
      * @param string        $mapperCollectionDelimiter
      */
-    public function __construct($entityManager, array $adapters, Validator $validator, $mapperClass, $mapperCollectionDelimiter)
+    public function __construct($entityManager, array $adapters, ValidatorInterface $validator, $mapperClass, $mapperCollectionDelimiter)
     {
         $this->adapters                  = $adapters;
         $this->validator                 = $validator;
